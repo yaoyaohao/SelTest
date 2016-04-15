@@ -1,0 +1,74 @@
+import static org.junit.Assert.assertEquals;
+
+import java.nio.charset.Charset;
+import java.util.ArrayList;
+import org.junit.*;
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.firefox.FirefoxDriver;
+
+import com.csvreader.CsvReader;
+
+public class TestSel {
+	
+	private ArrayList<String[]> csvList;
+    WebDriver driver;
+
+	//对csv文件进行处理
+	@Before
+	public  void readCSV(){
+        driver = new FirefoxDriver();
+
+	 try {       
+         csvList = new ArrayList<String[]>(); //存储csv中的信息
+         String csvFilePath = "C:\Users\yy\Desktop\大三下\软件测试";
+         CsvReader reader = new CsvReader(csvFilePath,',',Charset.forName("SJIS"));    //读入csv文件     
+             
+         reader.readHeaders(); //读标题
+             
+         while(reader.readRecord()){ //读取csv中的信息
+             csvList.add(reader.getValues());   
+         }               
+         reader.close();   
+
+     } catch (Exception ex) {   
+             System.out.println(ex);   
+         }   
+}
+@Test
+public void testSel(){
+    for(int row=0;row<csvList.size();row++) {
+        driver.get("http://www.ncfxy.com");
+        //读取csv中的信息
+        String number = csvList.get(row)[0];
+        String email = csvList.get(row)[1];
+
+        //获取登录页面的元素
+        WebElement username = driver.findElement(By.name("name"));
+        WebElement pwd = driver.findElement(By.name("pwd"));
+        WebElement sumit = driver.findElement(By.id("submit"));
+
+        //填入用户名和密码
+        username.clear();
+        username.sendKeys(name);
+        pwd.clear();
+        pwd.sendKeys(name.substring(4));
+        sumit.click();
+
+        //获取信息页面的邮箱值
+        WebElement tableEle = driver.findElement(By.id("table-main"));
+        String tableEleTextStr = tableEle.getText();
+        String mailEle = tableEleTextStr.substring(tableEleTextStr.indexOf("邮") + 3, tableEleTextStr.indexOf("学") - 1);
+        String id = tableEleTextStr.substring( tableEleTextStr.indexOf("学") + 3);
+        System.out.print(id);
+        boolean match = name.equals(id) && mail.equals(mail);   //验证邮箱和学号是否匹配
+        assertEquals(true, match);
+    }
+}
+
+    @After
+    public void close(){
+        driver.close();
+    }
+}
